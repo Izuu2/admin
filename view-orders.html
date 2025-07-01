@@ -101,7 +101,7 @@
   <div id="orders-container" class="loading">Loading orders...</div>
 
   <div style="max-width: 800px; margin: 2rem auto; text-align: center;">
-    <!-- <button id="toggle-theme-btn">🌗 Toggle Theme</button> -->
+    <button id="toggle-theme-btn">🌗 Toggle Theme</button>
     <button id="print-orders-btn">🖨️ Print Accepted Orders</button>
     <button id="export-orders-btn">📁 Export to Excel (CSV)</button>
   </div>
@@ -161,7 +161,7 @@
       container.innerHTML = "Loading orders...";
       try {
         const ordersRef = collection(firestore, "orders");
-        const q = query(ordersRef, orderBy("createdAt", "desc"));
+        const q = query(ordersRef, orderBy("createdAt", "asc"));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) {
@@ -329,3 +329,4 @@
   </script>
 </body>
 </html>
+
