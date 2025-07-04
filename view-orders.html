@@ -5,94 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Submitted Orders - Mainland Oil & Gas</title>
   <style>
-    /* Keep your second code styles here */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 2rem;
-      background-color: #f9f9f9;
-      color: #333;
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 2rem; background-color: #f9f9f9; color: #333; }
+    h1 { color: #a7cd3a; text-align: center; }
+    #orders-container { max-width: 800px; margin: auto; margin-top: 2rem; }
+    .order-card { background: #fff; border: 1px solid #ccc; border-left: 6px solid #a7cd3a; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; }
+    .order-card p { margin: 0.3rem 0; }
+    .loading { text-align: center; color: #666; }
+    .order-actions { margin-top: 0.8rem; }
+    .accept-btn, .decline-btn, .verify-btn { cursor: pointer; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-weight: bold; margin-right: 0.5rem; transition: background-color 0.3s ease; }
+    .accept-btn { background-color: #a7cd3a; color: white; }
+    .accept-btn:hover { background-color: #8bb32d; }
+    .decline-btn { background-color: #e74c3c; color: white; }
+    .decline-btn:hover { background-color: #c0392b; }
+    .verify-btn { background-color: #3498db; color: white; }
+    .verify-btn:hover { background-color: #297fb8; }
+    .accepted-label, .declined-label, .printed-label { font-weight: bold; position: absolute; top: 1rem; right: 1rem; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.9rem; }
+    .accepted-label { color: green; background: #d4edda; }
+    .declined-label { color: #e74c3c; background: #f8d7da; }
+    .printed-label { color: #6c757d; background: #e2e3e5; }
+    
+    /* Accepted orders table styles */
+    #accepted-orders-container {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    h1 {
+    #accepted-orders-container h2 {
       color: #a7cd3a;
       text-align: center;
+      margin-top: 0;
     }
-
-    #orders-container {
-      max-width: 800px;
-      margin: auto;
-      margin-top: 2rem;
+    #accepted-orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
     }
-
-    .order-card {
-      background: #fff;
-      border: 1px solid #ccc;
-      border-left: 6px solid #a7cd3a;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      position: relative;
+    #accepted-orders-table th, #accepted-orders-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
     }
-
-    .order-card p {
-      margin: 0.3rem 0;
+    #accepted-orders-table th {
+      background-color: #f2f2f2;
     }
-
-    .error {
-      color: red;
+    #accepted-orders-table tr:nth-child(even) {
+      background-color: #f9f9f9;
     }
-
-    .loading {
-      text-align: center;
-      color: #666;
+    .print-checkbox {
+      margin-right: 10px;
     }
-
-    /* Add accept/reject buttons */
-    .order-actions {
-      margin-top: 0.8rem;
-    }
-
-    .accept-btn, .decline-btn {
-      cursor: pointer;
-      border: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      font-weight: bold;
-      margin-right: 0.5rem;
-      transition: background-color 0.3s ease;
-    }
-
-    .accept-btn {
-      background-color: #a7cd3a;
-      color: white;
-    }
-
-    .accept-btn:hover {
-      background-color: #8bb32d;
-    }
-
-    .decline-btn {
-      background-color: #e74c3c;
-      color: white;
-    }
-
-    .decline-btn:hover {
-      background-color: #c0392b;
-    }
-
-    /* Accepted label */
-    .accepted-label {
-      color: green;
-      font-weight: bold;
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: #d4edda;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
+    
+    /* Print styles */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-section, #print-section * {
+        visibility: visible;
+      }
+      #print-section {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      #print-section table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #print-section th, #print-section td {
+        border: 1px solid #000;
+        padding: 8px;
+      }
+      .no-print {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -102,42 +92,43 @@
 
   <div style="max-width: 800px; margin: 2rem auto; text-align: center;">
     <button id="toggle-theme-btn">🌗 Toggle Theme</button>
-    <button id="print-orders-btn">🖨️ Print Accepted Orders</button>
+    <button id="print-orders-btn">🖨️ Print Selected Orders</button>
     <button id="export-orders-btn">📁 Export to Excel (CSV)</button>
   </div>
 
-  <div id="printAreaContainer" style="display:none;">
-    <h3>Accepted Orders (Print Format)</h3>
-    <table id="printArea" border="1" style="border-collapse: collapse; margin: auto;">
+  <!-- Accepted orders table -->
+  <div id="accepted-orders-container">
+    <h2>Accepted Orders (Ready for Printing)</h2>
+    <table id="accepted-orders-table">
       <thead>
         <tr>
-          <th>Product</th>
-          <th>Quantity</th>
-          <th>Size (L)</th>
-          <th>Company</th>
-          <th>Truck No</th>
-          <th>DPR Code</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>Submitted</th>
+          <th class="no-print">Print</th>
+          <th>Product</th><th>Quantity</th><th>Company</th>
+          <th>Truck No</th><th>DPR Code</th><th>Ticket No</th><th>Status</th><th>Submitted</th>
         </tr>
       </thead>
-      <tbody>
-      </tbody>
+      <tbody id="accepted-orders-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Hidden print section -->
+  <div id="print-section" style="display: none;">
+    <h2>Mainland Oil & Gas - Accepted Orders</h2>
+    <p style="text-align: right;">Printed on: <span id="print-date"></span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th><th>Quantity</th><th>Company</th>
+          <th>Truck No</th><th>DPR Code</th><th>Ticket No</th><th>Submitted</th>
+        </tr>
+      </thead>
+      <tbody id="print-body"></tbody>
     </table>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      query,
-      orderBy,
-      getDocs,
-      doc,
-      updateDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, query, orderBy, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCPhMXOil0T4TuRZcnhFhKDNXz8UfD5j0g",
@@ -148,185 +139,237 @@
       appId: "1:777899969990:web:659db45ddc039d957776c7",
       measurementId: "G-9F978V6EH0"
     };
-
     const app = initializeApp(firebaseConfig);
-    const firestore = getFirestore(app);
+    const db = getFirestore(app);
 
     const container = document.getElementById("orders-container");
-    const printArea = document.getElementById("printArea").querySelector("tbody");
-
+    const acceptedOrdersBody = document.getElementById("accepted-orders-body");
+    const printBody = document.getElementById("print-body");
     let ordersCache = [];
+
+    function generateTicket() {
+      return Math.floor(Math.random() * 90000) + 10000; // 5-digit number
+    }
+    const usedTickets = new Set();
 
     async function fetchSubmittedOrders() {
       container.innerHTML = "Loading orders...";
       try {
-        const ordersRef = collection(firestore, "orders");
-        const q = query(ordersRef, orderBy("createdAt", "asc"));
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(query(collection(db, "orders"), orderBy("createdAt", "desc"))); // Newest first
+        container.innerHTML = "";
+        acceptedOrdersBody.innerHTML = "";
+        ordersCache = [];
+        const now = Date.now();
+        const FIVE_DAYS = 5*24*60*60*1000;
 
-        if (snapshot.empty) {
-          container.innerHTML = "<p>No orders found.</p>";
-          return;
-        }
-
-        ordersCache = []; // reset cache
-
-        const ordersHTML = [];
         snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const id = docSnap.id;
+          const data = docSnap.data(), id = docSnap.id;
+          if (data.status === "declined" && data.declinedAt?.toDate) {
+            const diff = now - data.declinedAt.toDate().getTime();
+            if (diff > FIVE_DAYS) return;
+          }
           ordersCache.push({ id, ...data });
+          const created = data.createdAt?.toDate?.().toLocaleString() || "Unknown";
+          let actions = "";
 
-          const createdAt = data.createdAt?.toDate?.() || null;
-          const formattedDate = createdAt ? createdAt.toLocaleString() : "Unknown";
+          if (data.printed) {
+            actions = `<span class="printed-label">Printed</span>`;
+          } else if (data.accepted) {
+            actions = `<span class="accepted-label">Accepted</span>`;
+            // Add to accepted orders table if not printed
+            if (!data.printed) {
+              addToAcceptedTables(id, data, created);
+            }
+          } else if (data.status === "declined") {
+            actions = `<span class="declined-label">Declined</span><button class="verify-btn">Verify</button>`;
+          } else {
+            actions = `<button class="accept-btn">Accept</button><button class="decline-btn">Decline</button>`;
+          }
 
-          const accepted = data.accepted === true;
-
-          ordersHTML.push(`
+          container.innerHTML += `
             <div class="order-card" data-id="${id}">
-              <p><strong>Product:</strong> ${data.product?.toUpperCase() || "N/A"}</p>
+              <p><strong>Product:</strong> ${data.product?.toUpperCase()||"N/A"}</p>
               <p><strong>Quantity:</strong> ${data.quantity}</p>
-              ${data.size ? `<p><strong>Size:</strong> ${data.size}L</p>` : ""}
-              ${data.company ? `<p><strong>Company:</strong> ${data.company}</p>` : ""}
-              ${data.truckNumber ? `<p><strong>Truck No:</strong> ${data.truckNumber}</p>` : ""}
-              ${data.dprCode ? `<p><strong>DPR Code:</strong> ${data.dprCode}</p>` : ""}
-              ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ""}
-              <p><strong>Status:</strong> ${data.status || "pending"}</p>
-              <p><small><strong>Submitted:</strong> ${formattedDate}</small></p>
-              <div class="order-actions">
-                ${
-                  accepted
-                    ? `<span class="accepted-label">Accepted</span>`
-                    : `
-                    <button class="accept-btn">Accept</button>
-                    <button class="decline-btn">Decline</button>
-                    `
-                }
-              </div>
+              ${data.company?`<p><strong>Company:</strong> ${data.company}</p>`:""}
+              ${data.truckNumber?`<p><strong>Truck No:</strong> ${data.truckNumber}</p>`:""}
+              ${data.dprCode?`<p><strong>DPR Code:</strong> ${data.dprCode}</p>`:""}
+              <p><strong>Status:</strong> ${data.status||"pending"}</p>
+              <p><small><strong>Submitted:</strong> ${created}</small></p>
+              <div class="order-actions">${actions}</div>
             </div>
-          `);
+          `;
         });
 
-        container.innerHTML = ordersHTML.join("");
-
-        // Attach event listeners for buttons:
-        document.querySelectorAll(".accept-btn").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
-            const orderCard = e.target.closest(".order-card");
-            const id = orderCard.getAttribute("data-id");
-            await acceptOrder(id);
-          });
-        });
-
-        document.querySelectorAll(".decline-btn").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            const orderCard = e.target.closest(".order-card");
-            const id = orderCard.getAttribute("data-id");
-            declineOrder(id);
-          });
-        });
-
+        addButtonListeners();
       } catch (err) {
-        console.error(err);
-        container.innerHTML = `<p class="error">❌ Failed to load orders: ${err.message}</p>`;
+        container.innerHTML = `<p class="error">❌ Failed to load: ${err.message}</p>`;
       }
     }
 
-    async function acceptOrder(id) {
-      try {
-        const orderDocRef = doc(firestore, "orders", id);
-        // Update accepted field to true
-        await updateDoc(orderDocRef, { accepted: true });
+    function addToAcceptedTables(id, data, created) {
+      const tr = document.createElement("tr");
+      tr.dataset.id = id;
+      tr.innerHTML = `
+        <td class="no-print"><input type="checkbox" class="print-checkbox" checked></td>
+        <td>${data.product?.toUpperCase()||""}</td>
+        <td>${data.quantity}</td>
+        <td>${data.company||""}</td>
+        <td>${data.truckNumber||""}</td>
+        <td>${data.dprCode||""}</td>
+        <td>${data.ticketNumber||""}</td>
+        <td>${data.printed ? "Printed" : "Accepted"}</td>
+        <td>${created}</td>`;
+      acceptedOrdersBody.appendChild(tr);
+    }
 
-        alert("Order accepted.");
+    function addButtonListeners() {
+      document.querySelectorAll(".accept-btn").forEach(btn => btn.addEventListener("click", onAccept));
+      document.querySelectorAll(".decline-btn").forEach(btn => btn.addEventListener("click", onDecline));
+      document.querySelectorAll(".verify-btn").forEach(btn => btn.addEventListener("click", onVerify));
+    }
 
-        // Update print/export table
-        const order = ordersCache.find(o => o.id === id);
-        if (!order) return;
+    async function onAccept(e) {
+      const card = e.target.closest(".order-card");
+      const id = card.dataset.id;
+      const o = ordersCache.find(o => o.id === id);
+      let ticket;
+      do {
+        ticket = generateTicket();
+      } while (usedTickets.has(ticket));
+      usedTickets.add(ticket);
 
-        // If already in print area, don't duplicate
-        const exists = Array.from(printArea.children).some(tr => tr.dataset.id === id);
-        if (exists) return;
+      await updateDoc(doc(db, "orders", id), {
+        accepted: true,
+        status: "accepted",
+        ticketNumber: ticket,
+        printed: false // Mark as not printed yet
+      });
 
-        // Add accepted order row to print area
-        const row = document.createElement("tr");
-        row.dataset.id = id;
-        row.innerHTML = `
-          <td>${order.product?.toUpperCase() || "N/A"}</td>
-          <td>${order.quantity}</td>
-          <td>${order.size || ""}</td>
-          <td>${order.company || ""}</td>
-          <td>${order.truckNumber || ""}</td>
-          <td>${order.dprCode || ""}</td>
-          <td>${order.email || ""}</td>
-          <td>Accepted</td>
-          <td>${order.createdAt?.toDate ? order.createdAt.toDate().toLocaleString() : "Unknown"}</td>
+      // Update the UI
+      card.querySelector(".order-actions").innerHTML = `<span class="accepted-label">Accepted</span>`;
+      
+      // Add to accepted orders table
+      const created = o.createdAt?.toDate?.().toLocaleString() || "Unknown";
+      addToAcceptedTables(id, { ...o, ticketNumber: ticket, printed: false }, created);
+    }
+
+    async function onDecline(e) {
+      const card = e.target.closest(".order-card");
+      const id = card.dataset.id;
+      
+      await updateDoc(doc(db, "orders", id), {
+        status: "declined",
+        declinedAt: new Date()
+      });
+      
+      // Update the UI
+      card.querySelector(".order-actions").innerHTML = `
+        <span class="declined-label">Declined</span>
+        <button class="verify-btn">Verify</button>
+      `;
+      addButtonListeners();
+    }
+
+    async function onVerify(e) {
+      const card = e.target.closest(".order-card");
+      const id = card.dataset.id;
+      
+      await updateDoc(doc(db, "orders", id), {
+        status: "pending",
+        declinedAt: null
+      });
+      
+      // Update the UI
+      card.querySelector(".order-actions").innerHTML = `
+        <button class="accept-btn">Accept</button>
+        <button class="decline-btn">Decline</button>
+      `;
+      addButtonListeners();
+    }
+
+    // Print functionality
+    document.getElementById("print-orders-btn").addEventListener("click", async () => {
+      const selectedRows = Array.from(acceptedOrdersBody.querySelectorAll("tr"))
+        .filter(tr => tr.querySelector(".print-checkbox")?.checked);
+      
+      if (selectedRows.length === 0) {
+        alert("Please select at least one order to print");
+        return;
+      }
+      
+      // Prepare print content
+      printBody.innerHTML = "";
+      const printDate = new Date().toLocaleString();
+      document.getElementById("print-date").textContent = printDate;
+      
+      // Mark orders as printed and build print content
+      for (const row of selectedRows) {
+        const id = row.dataset.id;
+        const cells = row.querySelectorAll("td");
+        
+        // Add to print view
+        const printRow = document.createElement("tr");
+        printRow.innerHTML = `
+          <td>${cells[1].textContent}</td>
+          <td>${cells[2].textContent}</td>
+          <td>${cells[3].textContent}</td>
+          <td>${cells[4].textContent}</td>
+          <td>${cells[5].textContent}</td>
+          <td>${cells[6].textContent}</td>
+          <td>${cells[8].textContent}</td>
         `;
-        printArea.appendChild(row);
-
-        // Refresh list to update buttons and labels
-        fetchSubmittedOrders();
-
-      } catch (error) {
-        alert("Failed to accept order: " + error.message);
+        printBody.appendChild(printRow);
+        
+        // Mark as printed in database
+        await updateDoc(doc(db, "orders", id), {
+          printed: true,
+          printedAt: new Date()
+        });
+        
+        // Update UI - remove from printable table
+        row.remove();
+        
+        // Update the order card status
+        const card = document.querySelector(`.order-card[data-id="${id}"]`);
+        if (card) {
+          card.querySelector(".order-actions").innerHTML = `<span class="printed-label">Printed</span>`;
+        }
       }
-    }
+      
+      // Trigger print
+      const printSection = document.getElementById("print-section");
+      printSection.style.display = "block";
+      window.print();
+      printSection.style.display = "none";
+    });
 
-    function declineOrder(id) {
-      alert(`Order with ID ${id} declined.`);
-      // You can extend this to update Firestore or remove the order if needed
-    }
+    document.getElementById("export-orders-btn").addEventListener("click", () => {
+      const rows = Array.from(acceptedOrdersBody.querySelectorAll("tr"));
+      if (rows.length === 0) {
+        alert("No accepted orders to export");
+        return;
+      }
+      
+      const csv = rows.map(tr => 
+        Array.from(tr.querySelectorAll("td:not(.no-print)")).map(td => `"${td.textContent}"`).join(",")
+      ).join("\n");
+      
+      const header = ['Product','Quantity','Company','Truck No','DPR Code','Ticket No','Status','Submitted'].join(",");
+      const blob = new Blob([header + "\n" + csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `accepted_orders_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
 
-    // Theme toggle
     document.getElementById("toggle-theme-btn").addEventListener("click", () => {
       document.body.classList.toggle("dark");
     });
 
-    // Print accepted orders
-    document.getElementById("print-orders-btn").addEventListener("click", () => {
-      const printContainer = document.getElementById("printAreaContainer");
-      if (!printArea.hasChildNodes()) {
-        alert("No accepted orders to print.");
-        return;
-      }
-      const printContents = printContainer.innerHTML;
-      const originalContents = document.body.innerHTML;
-      document.body.innerHTML = printContents;
-      window.print();
-      document.body.innerHTML = originalContents;
-      fetchSubmittedOrders(); // reload after print
-    });
-
-    // Export accepted orders to CSV
-    document.getElementById("export-orders-btn").addEventListener("click", () => {
-      if (!printArea.hasChildNodes()) {
-        alert("No accepted orders to export.");
-        return;
-      }
-      const rows = Array.from(printArea.querySelectorAll("tr"));
-      const csv = rows.map(row => {
-        const cols = Array.from(row.querySelectorAll("td"));
-        return cols.map(col => `"${col.innerText}"`).join(",");
-      }).join("\n");
-
-      const header = ['Product','Quantity','Size (L)','Company','Truck No','DPR Code','Email','Status','Submitted'].join(",");
-      const csvWithHeader = header + "\n" + csv;
-
-      const blob = new Blob([csvWithHeader], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", "accepted_orders.csv");
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
+    // Initialize
     fetchSubmittedOrders();
-
   </script>
 </body>
 </html>
-
